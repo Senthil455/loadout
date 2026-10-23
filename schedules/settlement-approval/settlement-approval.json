@@ -1,0 +1,10 @@
+{
+  "name": "settlement-approval",
+  "schedule_type": "DATASTORE",
+  "config": {
+    "table_name": "review_requests",
+    "operations": ["INSERT"]
+  },
+  "workflow_name": "settlement-approval",
+  "is_active": true
+}

@@ -1,0 +1,7 @@
+id,settlement_id,status,reason,requested_by,requested_at,closed_at
+997a1b1d-6066-5512-ae4c-1e1527c26196,faf74d95-25c5-575b-8b56-38b4fb9f8f42,closed,Monthly settlement cycle,prepare_settlements,2026-09-19T09:00:00Z,2026-09-19T10:15:00Z
+10d954e3-8bc4-5904-9963-9e456f7b78d8,2771f812-9f33-5e07-a230-e7a89737aba2,closed,Monthly settlement cycle,prepare_settlements,2026-09-21T09:00:00Z,2026-09-21T10:15:00Z
+2e33015e-22aa-55f3-a37e-606fd5686381,d70a9138-1291-5665-b9e2-0d72063af893,closed,Monthly settlement cycle,prepare_settlements,2026-09-25T09:00:00Z,2026-09-25T11:15:00Z
+dd79fe3c-9292-5a0c-9abf-44db55abf901,06e5dba2-60ab-5701-8f58-44ba92cef636,closed,Monthly settlement cycle,prepare_settlements,2026-09-28T09:00:00Z,2026-09-28T10:15:00Z
+6bc4e36e-eec6-5931-b815-d5464491d301,fff7fd8b-ade9-59f5-a234-df1435bc7571,closed,Monthly settlement cycle,prepare_settlements,2026-10-02T09:00:00Z,2026-10-02T10:15:00Z
+9442274c-69d5-5594-b71b-57dcbf81e91f,b1a8f454-f0f6-5e6a-85d3-0d89c2ef5fcd,closed,Monthly settlement cycle,prepare_settlements,2026-10-04T09:00:00Z,2026-10-04T11:15:00Z

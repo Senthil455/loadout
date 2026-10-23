@@ -1,0 +1,11 @@
+id,show_date,artist,billing,room,deal_type,guarantee_cents,percentage_bps,expense_cap_cents,status,notes,external_ref
+23c667ef-39dd-50fa-a91e-2a1291a62c7c,2026-09-18,Nia Calder,Nia Calder with Halcyon,Main Room,FLAT,120000,0,200000,played,Album release week. Sold out.,LR-20260918
+25794ba9-2bab-52bc-97ca-9ab425fdf1fe,2026-09-20,Harbor Lights,Harbor Lights with Open Water,Main Room,PERCENTAGE,0,7000,250000,played,Four-piece. Load-in at 4pm.,LR-20260920
+51c9246d-ad7b-583e-afb5-ac76af7927a7,2026-09-24,The Quiet Hours,The Quiet Hours with Sable,Main Room,VS,90000,6500,280000,played,Sold out. Extra bar staff.,LR-20260924
+70735dc9-0a6d-5e5b-afe2-1db3a14c1469,2026-09-27,Otis Bell,Otis Bell,Main Room,FLAT,85000,0,150000,played,"Late add, reduced capacity.",LR-20260927
+49dfd524-88f7-53c8-bab1-e4df9c92a28b,2026-10-01,Saltwater Choir,Saltwater Choir with the Ferrymen,Main Room,PERCENTAGE,0,7500,260000,played,Benefit show. Full room.,LR-20261001
+4ddb63dd-c0ea-5d3d-8c02-32c14430339f,2026-10-03,Mira and the Tides,Mira and the Tides with Coral Room,Main Room,VS,140000,7000,550000,played,Tour kickoff. Backline rented.,LR-20261003
+96d13aaa-7e85-561c-9a0a-b99813ea5367,2026-10-08,Low Ceiling,Low Ceiling with Paper Tiger,Main Room,FLAT,95000,0,220000,played,Local opener added.,LR-20261008
+9b829583-f4f5-592f-af86-7e4b3fd23b08,2026-10-10,Fable & Stone,Fable & Stone with Juniper,Main Room,PERCENTAGE,0,6500,240000,played,Guest list ran long.,LR-20261010
+7dc90f47-2eb0-5e5f-9aca-6cd2ee8e8f15,2026-10-14,Rookery,Rookery with Bellwether,Main Room,VS,110000,6000,300000,played,Second show added.,LR-20261014
+dca1039a-370c-50ab-a312-382308d0124f,2026-10-17,June Almeida,June Almeida with the Long Way Home,Main Room,FLAT,130000,0,320000,played,Sold out. Production invoice pending.,LR-20261017

@@ -1,0 +1,22 @@
+{
+  "files": [
+    {
+      "description": "Thresholds and decision rules the settlement reviewer applies: fee bands, receipt requirements, recoup cap, comps, payout floor, and prior payment.",
+      "path": "/policy/settlement-policy.md",
+      "search_enabled": true,
+      "visibility": "POD"
+    },
+    {
+      "description": "How FLAT, PERCENTAGE, and VS deals are calculated, including the rounding rule and the order recoupment is applied.",
+      "path": "/policy/artist-deal-guide.md",
+      "search_enabled": true,
+      "visibility": "POD"
+    },
+    {
+      "description": "The nightly close sequence and the definition of a reconciled packet. Used when a settlement is reopened or a packet is incomplete.",
+      "path": "/policy/close-checklist.md",
+      "search_enabled": true,
+      "visibility": "POD"
+    }
+  ]
+}

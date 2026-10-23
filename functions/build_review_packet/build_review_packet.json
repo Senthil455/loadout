@@ -1,0 +1,22 @@
+{
+  "name": "build_review_packet",
+  "description": "Assemble the evidence packet for one settlement review. Reads the review request, settlement, show, ticket exports, expenses, venue settings, audit events, and prior payouts, then adds a fresh recomputation of the deal math. The reviewer receives only this packet, so the evidence is fixed before the model runs and the agent never needs write access.",
+  "type": "API",
+  "code": { "$file": "code.py" },
+  "permissions": { "grants": [
+    { "resource_type": "datastore_table", "resource_name": "settings",
+      "permission_ids": ["datastore.table.read", "datastore.record.read"] },
+    { "resource_type": "datastore_table", "resource_name": "shows",
+      "permission_ids": ["datastore.table.read", "datastore.record.read"] },
+    { "resource_type": "datastore_table", "resource_name": "ticket_sales",
+      "permission_ids": ["datastore.table.read", "datastore.record.read"] },
+    { "resource_type": "datastore_table", "resource_name": "expenses",
+      "permission_ids": ["datastore.table.read", "datastore.record.read"] },
+    { "resource_type": "datastore_table", "resource_name": "settlements",
+      "permission_ids": ["datastore.table.read", "datastore.record.read"] },
+    { "resource_type": "datastore_table", "resource_name": "review_requests",
+      "permission_ids": ["datastore.table.read", "datastore.record.read"] },
+    { "resource_type": "datastore_table", "resource_name": "settlement_events",
+      "permission_ids": ["datastore.table.read", "datastore.record.read"] }
+  ] }
+}

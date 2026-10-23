@@ -1,0 +1,12 @@
+{
+  "name": "mark_paid",
+  "description": "Close an approved settlement when the transfer clears. Stores the bank or check reference, the paid timestamp, and a paid event. Refuses anything that was not approved, so a hold can never turn into a payment by accident.",
+  "type": "API",
+  "code": { "$file": "code.py" },
+  "permissions": { "grants": [
+    { "resource_type": "datastore_table", "resource_name": "settlements",
+      "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] },
+    { "resource_type": "datastore_table", "resource_name": "settlement_events",
+      "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] }
+  ] }
+}

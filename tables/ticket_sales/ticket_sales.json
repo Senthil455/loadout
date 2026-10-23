@@ -1,0 +1,23 @@
+{
+  "name": "ticket_sales",
+  "primary_key_column": "id",
+  "enable_rls": false,
+  "columns": [
+    { "name": "show_id", "type": "UUID", "required": true,
+      "foreign_key": { "references": "shows.id" } },
+    { "name": "channel", "type": "ENUM", "required": true,
+      "options": ["online", "door"],
+      "description": "One row per channel per show. Online is the ticketing export; door is the closing sheet." },
+    { "name": "paid_quantity", "type": "INTEGER", "required": true, "default": 0 },
+    { "name": "face_value_cents", "type": "INTEGER", "required": true,
+      "description": "Ticket price for this channel in cents." },
+    { "name": "fees_cents", "type": "INTEGER", "required": true, "default": 0,
+      "description": "Processor and platform fees withheld from this channel." },
+    { "name": "comps", "type": "INTEGER", "required": true, "default": 0,
+      "description": "Free admissions recorded on this channel." },
+    { "name": "source_ref", "type": "TEXT", "max_length": 160,
+      "description": "Export or sheet the counts came from. Blank means the row cannot be reconciled." },
+    { "name": "recorded_at", "type": "DATETIME" }
+  ],
+  "config": {}
+}

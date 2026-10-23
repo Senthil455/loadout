@@ -1,0 +1,16 @@
+{
+  "name": "settlement_events",
+  "primary_key_column": "id",
+  "enable_rls": false,
+  "columns": [
+    { "name": "settlement_id", "type": "UUID", "required": true,
+      "foreign_key": { "references": "settlements.id" } },
+    { "name": "kind", "type": "ENUM", "required": true,
+      "options": ["prepared", "review_ready", "approved", "held", "paid", "reopened"] },
+    { "name": "actor", "type": "TEXT", "max_length": 200,
+      "description": "Function name, agent name, or the email of the person who acted." },
+    { "name": "detail", "type": "TEXT", "max_length": 800 },
+    { "name": "occurred_at", "type": "DATETIME", "required": true }
+  ],
+  "config": {}
+}

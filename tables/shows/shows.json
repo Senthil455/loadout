@@ -1,0 +1,28 @@
+{
+  "name": "shows",
+  "primary_key_column": "id",
+  "enable_rls": false,
+  "columns": [
+    { "name": "show_date", "type": "DATE", "required": true,
+      "description": "Night the show played. Settlements are prepared after this date." },
+    { "name": "artist", "type": "TEXT", "required": true, "max_length": 160 },
+    { "name": "billing", "type": "TEXT", "max_length": 240,
+      "description": "Full billing line used on the settlement memo." },
+    { "name": "room", "type": "TEXT", "max_length": 80, "default": "Main Room" },
+    { "name": "deal_type", "type": "ENUM", "required": true,
+      "options": ["FLAT", "PERCENTAGE", "VS"],
+      "description": "FLAT pays the guarantee. PERCENTAGE pays a share of the pool. VS pays the greater of the two." },
+    { "name": "guarantee_cents", "type": "INTEGER", "required": true, "default": 0,
+      "description": "Guaranteed fee in cents. Zero for a pure percentage deal." },
+    { "name": "percentage_bps", "type": "INTEGER", "required": true, "default": 0,
+      "description": "Artist share in basis points. 7000 is 70.00 percent." },
+    { "name": "expense_cap_cents", "type": "INTEGER", "required": true, "default": 0,
+      "description": "Most recoupable expense the deal allows, in cents." },
+    { "name": "status", "type": "ENUM", "required": true, "default": "scheduled",
+      "options": ["scheduled", "played", "cancelled"] },
+    { "name": "notes", "type": "TEXT", "max_length": 600 },
+    { "name": "external_ref", "type": "TEXT", "unique": true, "max_length": 80,
+      "description": "Stable id from the venue's show book." }
+  ],
+  "config": {}
+}

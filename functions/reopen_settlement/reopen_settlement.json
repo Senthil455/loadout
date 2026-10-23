@@ -1,0 +1,14 @@
+{
+  "name": "reopen_settlement",
+  "description": "Put a held, approved, or stale draft settlement back into review without recomputing the money. Clears the previous decision, writes a reopened event, and inserts a fresh review request, which starts the approval workflow again. A paid settlement is refused.",
+  "type": "API",
+  "code": { "$file": "code.py" },
+  "permissions": { "grants": [
+    { "resource_type": "datastore_table", "resource_name": "settlements",
+      "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] },
+    { "resource_type": "datastore_table", "resource_name": "review_requests",
+      "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] },
+    { "resource_type": "datastore_table", "resource_name": "settlement_events",
+      "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] }
+  ] }
+}

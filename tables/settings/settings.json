@@ -1,0 +1,19 @@
+{
+  "name": "settings",
+  "primary_key_column": "id",
+  "enable_rls": false,
+  "columns": [
+    { "name": "venue_name", "type": "TEXT", "max_length": 160 },
+    { "name": "room_name", "type": "TEXT", "max_length": 80 },
+    { "name": "approval_member_id", "type": "TEXT", "max_length": 120,
+      "description": "Pod member who receives payout approval forms. The app claims this on first open when it is blank." },
+    { "name": "comp_allowance", "type": "INTEGER", "default": 12,
+      "description": "Comps per show before the agent raises a watch item." },
+    { "name": "receipt_threshold_cents", "type": "INTEGER", "default": 25000,
+      "description": "Recoupable expenses at or above this amount require a receipt reference." },
+    { "name": "currency", "type": "TEXT", "max_length": 8, "default": "USD" },
+    { "name": "activated", "type": "BOOLEAN", "default": false },
+    { "name": "last_cycle_at", "type": "DATETIME" }
+  ],
+  "config": {}
+}

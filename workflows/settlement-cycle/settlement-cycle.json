@@ -1,0 +1,22 @@
+{
+  "name": "settlement-cycle",
+  "description": "Runs prepare_settlements once a day. Every played show without a settlement gets a draft with the deal math snapshotted and one review request opened; the request insert starts settlement-approval.",
+  "start": { "type": "SCHEDULED", "config": { "schedule_type": "CRON" } },
+  "run_title": ["'Daily settlement cycle'"],
+  "max_concurrent_runs": 1,
+  "nodes": [
+    {
+      "id": "prepare",
+      "type": "FUNCTION",
+      "label": "Prepare settlements",
+      "config": {
+        "function_name": "prepare_settlements",
+        "input_mapping": {}
+      }
+    },
+    { "id": "end", "type": "END", "label": "Cycle queued" }
+  ],
+  "edges": [
+    { "id": "e1", "source": "prepare", "target": "end" }
+  ]
+}

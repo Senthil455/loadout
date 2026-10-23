@@ -1,0 +1,16 @@
+{
+  "name": "review_requests",
+  "primary_key_column": "id",
+  "enable_rls": false,
+  "columns": [
+    { "name": "settlement_id", "type": "UUID", "required": true,
+      "foreign_key": { "references": "settlements.id" } },
+    { "name": "status", "type": "ENUM", "required": true, "default": "open",
+      "options": ["open", "closed"] },
+    { "name": "reason", "type": "TEXT", "max_length": 400 },
+    { "name": "requested_by", "type": "TEXT", "max_length": 200 },
+    { "name": "requested_at", "type": "DATETIME" },
+    { "name": "closed_at", "type": "DATETIME" }
+  ],
+  "config": {}
+}

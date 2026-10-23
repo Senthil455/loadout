@@ -1,0 +1,264 @@
+{
+  "name": "settlement-approval",
+  "description": "Fires when a review request is opened. The settlement reviewer audits the packet, attach_review stores the findings and returns the desk approver, and a human form decides the payout. Approval or hold is written back by record_review. A form with no configured approver stays unassigned so any pod member can answer it.",
+  "start": {
+    "type": "DATASTORE_EVENT",
+    "config": { "table_name": "review_requests", "operations": ["INSERT"] }
+  },
+  "run_title": ["build_packet.show.artist", "build_packet.show.show_date"],
+  "max_concurrent_runs": 10,
+  "nodes": [
+    {
+      "id": "gate_request",
+      "type": "DECISION",
+      "label": "Open request?",
+      "config": {
+        "rules": [
+          { "condition": "start.payload.status == 'open'", "next_node_id": "build_packet" }
+        ]
+      }
+    },
+    {
+      "id": "build_packet",
+      "type": "FUNCTION",
+      "label": "Build evidence packet",
+      "config": {
+        "function_name": "build_review_packet",
+        "input_mapping": {
+          "review_request_id": { "type": "expression", "value": "start.metadata.record_id" },
+          "settlement_id": { "type": "expression", "value": "start.payload.settlement_id" }
+        }
+      }
+    },
+    {
+      "id": "review",
+      "type": "AGENT",
+      "label": "Review the packet",
+      "config": {
+        "agent_name": "settlement-reviewer",
+        "input_mapping": {
+          "review_request_id": { "type": "expression", "value": "start.metadata.record_id" },
+          "settlement_id": { "type": "expression", "value": "start.payload.settlement_id" },
+          "packet": { "type": "expression", "value": "build_packet.packet" }
+        }
+      }
+    },
+    {
+      "id": "attach",
+      "type": "FUNCTION",
+      "label": "Store review",
+      "config": {
+        "function_name": "attach_review",
+        "input_mapping": {
+          "review_request_id": { "type": "expression", "value": "start.metadata.record_id" },
+          "settlement_id": { "type": "expression", "value": "start.payload.settlement_id" },
+          "headline": { "type": "expression", "value": "review.headline", "optional": true },
+          "recommendation": { "type": "expression", "value": "review.recommendation" },
+          "findings": { "type": "expression", "value": "review.findings", "optional": true },
+          "review_note": { "type": "expression", "value": "review.review_note", "optional": true },
+          "confidence": { "type": "expression", "value": "review.confidence", "optional": true }
+        }
+      }
+    },
+    {
+      "id": "route_review",
+      "type": "DECISION",
+      "label": "Review accepted?",
+      "config": {
+        "rules": [
+          { "condition": "attach.can_review == `true`", "next_node_id": "route_assignee" }
+        ]
+      }
+    },
+    {
+      "id": "route_assignee",
+      "type": "DECISION",
+      "label": "Approver configured?",
+      "config": {
+        "rules": [
+          { "condition": "attach.approval_member_id", "next_node_id": "approval_assigned" }
+        ]
+      }
+    },
+    {
+      "id": "approval_assigned",
+      "type": "FORM",
+      "label": "Desk approval",
+      "config": {
+        "assignee_pod_member_id_expression": "attach.approval_member_id",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "decision": {
+              "type": "string",
+              "enum": ["approve", "hold"],
+              "description": "Approve the payout or hold the settlement for another look."
+            },
+            "approved_payout_cents": {
+              "type": "integer",
+              "minimum": 0,
+              "default": { "type": "expression", "value": "attach.payout_cents" },
+              "description": "Dollars are entered in the desk app; the stored value is cents."
+            },
+            "note": {
+              "type": "string",
+              "maxLength": 1200,
+              "description": "Required when the approved amount differs from the calculated payout."
+            },
+            "approver_email": {
+              "type": "string",
+              "description": "Set by the desk app so the audit trail names the person, not the workflow service account."
+            }
+          },
+          "required": ["decision", "approved_payout_cents"]
+        },
+        "ui_schema": { "ui:order": ["decision", "approved_payout_cents", "note"] }
+      }
+    },
+    {
+      "id": "approval_open",
+      "type": "FORM",
+      "label": "Desk approval (any member)",
+      "config": {
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "decision": {
+              "type": "string",
+              "enum": ["approve", "hold"],
+              "description": "Approve the payout or hold the settlement for another look."
+            },
+            "approved_payout_cents": {
+              "type": "integer",
+              "minimum": 0,
+              "default": { "type": "expression", "value": "attach.payout_cents" },
+              "description": "Dollars are entered in the desk app; the stored value is cents."
+            },
+            "note": {
+              "type": "string",
+              "maxLength": 1200,
+              "description": "Required when the approved amount differs from the calculated payout."
+            },
+            "approver_email": {
+              "type": "string",
+              "description": "Set by the desk app so the audit trail names the person, not the workflow service account."
+            }
+          },
+          "required": ["decision", "approved_payout_cents"]
+        },
+        "ui_schema": { "ui:order": ["decision", "approved_payout_cents", "note"] }
+      }
+    },
+    {
+      "id": "route_decision",
+      "type": "DECISION",
+      "label": "Approved?",
+      "config": {
+        "rules": [
+          { "condition": "approval_assigned.decision == 'approve'", "next_node_id": "record_approval" }
+        ]
+      }
+    },
+    {
+      "id": "route_decision_open",
+      "type": "DECISION",
+      "label": "Approved?",
+      "config": {
+        "rules": [
+          { "condition": "approval_open.decision == 'approve'", "next_node_id": "record_approval_open" }
+        ]
+      }
+    },
+    {
+      "id": "record_approval",
+      "type": "FUNCTION",
+      "label": "Record approval",
+      "config": {
+        "function_name": "record_review",
+        "input_mapping": {
+          "review_request_id": { "type": "expression", "value": "start.metadata.record_id" },
+          "settlement_id": { "type": "expression", "value": "attach.settlement_id" },
+          "approved": { "type": "literal", "value": true },
+          "payout_cents": { "type": "expression", "value": "approval_assigned.approved_payout_cents" },
+          "review_note": { "type": "expression", "value": "approval_assigned.note", "optional": true },
+          "decided_by": { "type": "expression", "value": "approval_assigned.approver_email", "optional": true }
+        }
+      }
+    },
+    {
+      "id": "record_hold",
+      "type": "FUNCTION",
+      "label": "Record hold",
+      "config": {
+        "function_name": "record_review",
+        "input_mapping": {
+          "review_request_id": { "type": "expression", "value": "start.metadata.record_id" },
+          "settlement_id": { "type": "expression", "value": "attach.settlement_id" },
+          "approved": { "type": "literal", "value": false },
+          "payout_cents": { "type": "expression", "value": "approval_assigned.approved_payout_cents", "optional": true },
+          "review_note": { "type": "expression", "value": "approval_assigned.note", "optional": true },
+          "decided_by": { "type": "expression", "value": "approval_assigned.approver_email", "optional": true }
+        }
+      }
+    },
+    {
+      "id": "record_approval_open",
+      "type": "FUNCTION",
+      "label": "Record approval",
+      "config": {
+        "function_name": "record_review",
+        "input_mapping": {
+          "review_request_id": { "type": "expression", "value": "start.metadata.record_id" },
+          "settlement_id": { "type": "expression", "value": "attach.settlement_id" },
+          "approved": { "type": "literal", "value": true },
+          "payout_cents": { "type": "expression", "value": "approval_open.approved_payout_cents" },
+          "review_note": { "type": "expression", "value": "approval_open.note", "optional": true },
+          "decided_by": { "type": "expression", "value": "approval_open.approver_email", "optional": true }
+        }
+      }
+    },
+    {
+      "id": "record_hold_open",
+      "type": "FUNCTION",
+      "label": "Record hold",
+      "config": {
+        "function_name": "record_review",
+        "input_mapping": {
+          "review_request_id": { "type": "expression", "value": "start.metadata.record_id" },
+          "settlement_id": { "type": "expression", "value": "attach.settlement_id" },
+          "approved": { "type": "literal", "value": false },
+          "payout_cents": { "type": "expression", "value": "approval_open.approved_payout_cents", "optional": true },
+          "review_note": { "type": "expression", "value": "approval_open.note", "optional": true },
+          "decided_by": { "type": "expression", "value": "approval_open.approver_email", "optional": true }
+        }
+      }
+    },
+    { "id": "end_skipped", "type": "END", "label": "Request was not open" },
+    { "id": "end_closed", "type": "END", "label": "No approval form needed" },
+    { "id": "end_approved", "type": "END", "label": "Payout approved" },
+    { "id": "end_held", "type": "END", "label": "Payout held" },
+    { "id": "end_approved_open", "type": "END", "label": "Payout approved" },
+    { "id": "end_held_open", "type": "END", "label": "Payout held" }
+  ],
+  "edges": [
+    { "id": "e1", "source": "gate_request", "target": "end_skipped", "label": "not open (default)" },
+    { "id": "e1b", "source": "gate_request", "target": "build_packet", "label": "open" },
+    { "id": "e1c", "source": "build_packet", "target": "review" },
+    { "id": "e2", "source": "review", "target": "attach" },
+    { "id": "e3", "source": "attach", "target": "route_review" },
+    { "id": "e4", "source": "route_review", "target": "end_closed", "label": "already decided (default)" },
+    { "id": "e4b", "source": "route_review", "target": "route_assignee", "label": "review stored" },
+    { "id": "e5", "source": "route_assignee", "target": "approval_open", "label": "no approver configured (default)" },
+    { "id": "e5b", "source": "route_assignee", "target": "approval_assigned", "label": "approver configured" },
+    { "id": "e6", "source": "approval_assigned", "target": "route_decision" },
+    { "id": "e6b", "source": "approval_open", "target": "route_decision_open" },
+    { "id": "e7", "source": "route_decision", "target": "record_hold", "label": "hold (default)" },
+    { "id": "e7b", "source": "route_decision", "target": "record_approval", "label": "approve" },
+    { "id": "e8", "source": "record_approval", "target": "end_approved" },
+    { "id": "e8b", "source": "record_hold", "target": "end_held" },
+    { "id": "e9", "source": "route_decision_open", "target": "record_hold_open", "label": "hold (default)" },
+    { "id": "e9b", "source": "route_decision_open", "target": "record_approval_open", "label": "approve" },
+    { "id": "e10", "source": "record_approval_open", "target": "end_approved_open" },
+    { "id": "e10b", "source": "record_hold_open", "target": "end_held_open" }
+  ]
+}

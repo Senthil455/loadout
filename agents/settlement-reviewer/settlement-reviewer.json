@@ -1,0 +1,61 @@
+{
+  "name": "settlement-reviewer",
+  "description": "Audits one prepared artist settlement from a fixed evidence packet. Recommends approve or hold with one finding per check; never moves money, never edits a calculated payout, and never reads outside the packet.",
+  "instruction": { "$file": "instruction.md" },
+  "toolsets": [],
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "review_request_id": { "type": "string", "description": "Id of the open review_requests row that started this review." },
+      "settlement_id": { "type": "string", "description": "Id of the draft settlements row under review." },
+      "packet": {
+        "type": "object",
+        "description": "The complete evidence packet built by build_review_packet: request, settlement, show, ticket rows, expense rows, settings, audit events, prior payouts, and a fresh deal-math recomputation."
+      }
+    },
+    "required": ["review_request_id", "settlement_id", "packet"]
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "headline": {
+        "type": "string",
+        "description": "One sentence, at most 90 characters, that says whether the packet is clean or what is wrong."
+      },
+      "recommendation": {
+        "type": "string",
+        "enum": ["approve", "hold"],
+        "description": "approve when no check blocks and fewer than two checks are on watch; hold otherwise."
+      },
+      "findings": {
+        "type": "array",
+        "description": "One entry per check, ordered blocks first, then watches, then passes. Use the check ids from the instruction.",
+        "items": {
+          "type": "object",
+          "properties": {
+            "check": { "type": "string" },
+            "status": { "type": "string", "enum": ["pass", "watch", "block"] },
+            "detail": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The evidence: amounts, counts, dates, missing references. At most 240 characters."
+            }
+          },
+          "required": ["check", "status", "detail"]
+        }
+      },
+      "review_note": {
+        "type": "string",
+        "description": "Two or three sentences for the manager. Name the money and the decision the evidence supports. At most 600 characters."
+      },
+      "confidence": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1,
+        "description": "0 to 1. Lower it when a source row is missing rather than merely failing a rule."
+      }
+    },
+    "required": ["headline", "recommendation", "findings", "review_note", "confidence"]
+  },
+  "permissions": { "grants": [] }
+}

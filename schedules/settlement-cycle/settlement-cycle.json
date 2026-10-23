@@ -1,0 +1,11 @@
+{
+  "name": "settlement-cycle",
+  "schedule_type": "TIME",
+  "config": {
+    "cron": "0 9 * * *",
+    "timezone": "America/New_York",
+    "max_concurrent_runs": 1
+  },
+  "workflow_name": "settlement-cycle",
+  "is_active": true
+}

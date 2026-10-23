@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Settlement Desk - The Lantern Room</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" />
+<style>
+  :root {
+    --paper: #f2ede2;
+    --paper-2: #faf7ef;
+    --paper-3: #ece5d6;
+    --ink: #1d1a16;
+    --ink-2: #575147;
+    --ink-3: #8a8174;
+    --rule: #ddd3c1;
+    --rule-2: #c9bda7;
+    --green: #1e5a47;
+    --green-2: #164436;
+    --green-tint: #e0ebe4;
+    --gold: #9a6a1c;
+    --gold-tint: #f4e6c8;
+    --rust: #98392c;
+    --rust-tint: #f5e0da;
+    --blue: #2e4f66;
+    --blue-tint: #e2ebf0;
+    --muted-tint: #e9e3d7;
+    --shadow: 0 1px 2px rgba(45, 36, 22, .05), 0 10px 30px rgba(45, 36, 22, .07);
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --display: "Fraunces", Georgia, serif;
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: var(--sans);
+    color: var(--ink);
+    background: var(--paper);
+    font-size: 13.5px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: .35;
+    background-image:
+      radial-gradient(circle at 18% 12%, rgba(154, 106, 28, .06), transparent 38%),
+      radial-gradient(circle at 82% 78%, rgba(30, 90, 71, .05), transparent 42%),
+      repeating-linear-gradient(0deg, rgba(29, 26, 22, .012) 0, rgba(29, 26, 22, .012) 1px, transparent 1px, transparent 4px);
+  }
+  button, input, textarea, select { font: inherit; color: inherit; }
+  button { cursor: pointer; border: none; background: none; }
+  ::selection { background: var(--gold-tint); }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: var(--rule-2); border-radius: 8px; border: 3px solid var(--paper); }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  .shell {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 78px 356px minmax(0, 1fr);
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ---- rail ---- */
+  .rail {
+    background: var(--ink);
+    color: #efe8da;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 18px 0 14px;
+    gap: 6px;
+  }
+  .mark {
+    width: 38px; height: 38px;
+    border: 1px solid rgba(239, 232, 218, .35);
+    border-radius: 10px;
+    display: grid; place-items: center;
+    margin-bottom: 20px;
+    position: relative;
+  }
+  .mark::before {
+    content: "";
+    width: 12px; height: 16px;
+    border: 1.5px solid #e8d9b5;
+    border-radius: 6px 6px 4px 4px;
+    position: relative;
+  }
+  .mark::after {
+    content: "";
+    position: absolute;
+    width: 1px; height: 5px;
+    background: #e8d9b5;
+    top: 8px;
+    box-shadow: -5px 3px 0 #e8d9b5, 5px 3px 0 #e8d9b5;
+  }
+  .rail-btn {
+    width: 46px; height: 46px;
+    border-radius: 10px;
+    color: rgba(239, 232, 218, .58);
+    display: grid; place-items: center;
+    font-size: 19px;
+    position: relative;
+  }
+  .rail-btn:hover { color: #fff; background: rgba(255, 255, 255, .06); }
+  .rail-btn.on { color: #f6ecd6; background: rgba(232, 217, 181, .12); }
+  .rail-btn.on::before {
+    content: "";
+    position: absolute; left: -16px; top: 13px;
+    width: 3px; height: 20px; border-radius: 0 3px 3px 0;
+    background: #e8d9b5;
+  }
+  .rail-spacer { flex: 1; }
+  .rail-foot {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: rgba(239, 232, 218, .32);
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    padding-bottom: 4px;
+  }
+
+  /* ---- queue ---- */
+  .queue {
+    background: var(--paper-2);
+    border-right: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .queue-head {
+    padding: 22px 20px 15px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: block;
+  }
+  .queue-head h1 {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 25px;
+    letter-spacing: -.02em;
+    line-height: 1.1;
+    margin: 7px 0 3px;
+  }
+  .venue-line {
+    color: var(--ink-2);
+    font-size: 12.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .venue-line .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--rule-2); }
+  .cycle-card {
+    margin: 14px 16px 10px;
+    padding: 12px;
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    background: var(--paper-2);
+  }
+  .cycle-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .cycle-row strong { font-size: 12.5px; font-weight: 600; }
+  .cycle-when { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border-radius: 8px;
+    border: 1px solid var(--rule-2);
+    background: var(--paper-2);
+    color: var(--ink);
+    padding: 8px 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    transition: background .12s ease, border-color .12s ease, transform .12s ease;
+  }
+  .btn:hover { background: var(--paper-3); }
+  .btn:active { transform: translateY(1px); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+  .btn.primary { background: var(--green); border-color: var(--green); color: #f7f0df; }
+  .btn.primary:hover { background: var(--green-2); }
+  .btn.rust { background: var(--rust); border-color: var(--rust); color: #fbeee9; }
+  .btn.rust:hover { background: #812f24; }
+  .btn.ghost { background: transparent; border-color: transparent; color: var(--ink-2); padding: 6px 8px; }
+  .btn.ghost:hover { background: var(--paper-3); color: var(--ink); }
+  .cycle-btn { width: 100%; margin-top: 10px; }
+  .cycle-btn i { font-size: 14px; }
+  .spin { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .filters {
+    display: flex;
+    gap: 4px;
+    padding: 8px 16px 12px;
+    border-bottom: 1px solid var(--rule);
+    flex-wrap: wrap;
+  }
+  .chip {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .03em;
+    padding: 5px 9px;
+    border-radius: 20px;
+    border: 1px solid transparent;
+    color: var(--ink-3);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .chip:hover { color: var(--ink); background: var(--paper-3); }
+  .chip.on { color: var(--ink); background: var(--paper-3); border-color: var(--rule); }
+  .chip .ct { color: var(--ink-3); font-size: 9.5px; }
+  .chip.on .ct { color: var(--green); }
+
+  .q-list { overflow-y: auto; flex: 1; min-height: 0; padding-bottom: 30px; }
+  .group-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    padding: 16px 20px 7px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .group-label span { color: var(--rule-2); }
+  .q-row {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 12px 18px 12px 20px;
+    border-top: 1px solid transparent;
+    border-bottom: 1px solid var(--rule);
+    position: relative;
+    transition: background .1s ease;
+  }
+  .q-row:hover { background: #f6f1e6; }
+  .q-row.sel { background: var(--paper-3); }
+  .q-row.sel::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--green);
+  }
+  .q-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .q-name { font-weight: 600; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .q-amt { font-family: var(--mono); font-size: 11.5px; color: var(--ink); white-space: nowrap; }
+  .q-meta {
+    display: flex; align-items: center; gap: 7px; margin-top: 4px;
+    font-family: var(--mono); font-size: 10px; color: var(--ink-3);
+  }
+  .q-flags { display: flex; gap: 4px; margin-top: 7px; flex-wrap: wrap; }
+  .tiny-chip {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: .02em;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--muted-tint);
+    color: var(--ink-2);
+  }
+  .tiny-chip.red { background: var(--rust-tint); color: var(--rust); }
+  .tiny-chip.amber { background: var(--gold-tint); color: var(--gold); }
+  .tiny-chip.green { background: var(--green-tint); color: var(--green); }
+  .q-empty { padding: 26px 20px; color: var(--ink-3); font-size: 12.5px; line-height: 1.6; }
+
+  /* ---- main sheet ---- */
+  .main { overflow-y: auto; min-width: 0; padding: 26px 34px 90px; }
+  .sheet { max-width: 1080px; margin: 0 auto; }
+  .sheet-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
+  .crumb { font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+  .crumb b { color: var(--ink-2); font-weight: 500; }
+  .stamp {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    border: 1.5px solid currentColor;
+    border-radius: 3px;
+    padding: 5px 9px;
+    transform: rotate(-2deg);
+    white-space: nowrap;
+  }
+  .stamp.draft { color: var(--ink-3); }
+  .stamp.awaiting_approval { color: var(--gold); }
+  .stamp.approved { color: var(--green); }
+  .stamp.held { color: var(--rust); }
+  .stamp.paid { color: var(--green-2); background: var(--green-tint); }
+
+  .artist-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-top: 10px; }
+  .artist { font-family: var(--display); font-size: clamp(34px, 4.6vw, 54px); font-weight: 500; line-height: .98; letter-spacing: -.03em; margin: 0; }
+  .show-meta { margin-top: 10px; color: var(--ink-2); font-size: 12.5px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .show-meta .sep { color: var(--rule-2); }
+  .deal-tag {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase;
+    background: var(--ink); color: #f3ecdd; border-radius: 4px; padding: 4px 7px;
+  }
+  .hero {
+    display: grid;
+    grid-template-columns: 1.2fr .8fr;
+    gap: 24px;
+    align-items: end;
+    margin: 26px 0 24px;
+    padding: 20px 0 22px;
+    border-top: 1px solid var(--ink);
+    border-bottom: 1px solid var(--rule-2);
+  }
+  .amount { font-family: var(--display); font-size: clamp(42px, 6vw, 68px); line-height: .95; letter-spacing: -.04em; margin-top: 5px; }
+  .amount.small { font-size: clamp(30px, 4vw, 46px); }
+  .hero-side { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; }
+  .stat .k { font-family: var(--mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+  .stat .v { font-family: var(--mono); font-size: 14px; margin-top: 3px; font-variant-numeric: tabular-nums; }
+  .stat .v.red { color: var(--rust); }
+  .stat .v.green { color: var(--green); }
+
+  .columns { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(300px, .75fr); gap: 28px; align-items: start; }
+  .card {
+    background: var(--paper-2);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+  }
+  .card-head {
+    padding: 14px 16px 11px;
+    border-bottom: 1px solid var(--rule);
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  }
+  .card-head h2 { font-size: 13px; font-weight: 600; margin: 0; letter-spacing: -.01em; }
+  .card-head .hint { font-family: var(--mono); font-size: 9.5px; color: var(--ink-3); }
+  .card-body { padding: 14px 16px; }
+
+  .ledger { width: 100%; border-collapse: collapse; }
+  .ledger td { padding: 6px 0; font-size: 12.5px; vertical-align: baseline; }
+  .ledger td:first-child { color: var(--ink-2); }
+  .ledger td:last-child { text-align: right; font-family: var(--mono); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .ledger tr.sub td { padding-top: 10px; border-top: 1px solid var(--rule); }
+  .ledger tr.total td { padding-top: 12px; border-top: 1px solid var(--rule-2); font-weight: 600; color: var(--ink); }
+  .ledger tr.total td:last-child { font-size: 13px; }
+  .ledger .neg { color: var(--rust); }
+  .ledger .pos { color: var(--green); }
+  .ledger .note { font-family: var(--sans); font-size: 10.5px; color: var(--ink-3); display: block; margin-top: 1px; }
+
+  .deal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 18px; margin-top: 2px; }
+  .deal-grid .k { font-family: var(--mono); font-size: 9px; letter-spacing: .09em; text-transform: uppercase; color: var(--ink-3); }
+  .deal-grid .v { font-size: 12.5px; margin-top: 2px; }
+  .formula {
+    margin-top: 14px;
+    padding: 10px 11px;
+    background: var(--paper-3);
+    border-radius: 7px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    line-height: 1.7;
+    color: var(--ink-2);
+    overflow-x: auto;
+    white-space: pre-wrap;
+  }
+
+  /* review card */
+  .review-summary { display: flex; gap: 12px; align-items: flex-start; }
+  .review-mark {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: grid; place-items: center;
+    font-size: 17px; flex: none;
+    background: var(--green-tint); color: var(--green);
+  }
+  .review-mark.hold { background: var(--rust-tint); color: var(--rust); }
+  .review-headline { font-family: var(--display); font-size: 19px; line-height: 1.2; letter-spacing: -.01em; margin: 0; }
+  .review-sub { color: var(--ink-2); font-size: 12px; margin-top: 5px; }
+  .review-meta { display: flex; gap: 8px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+  .pill {
+    font-family: var(--mono); font-size: 9px; letter-spacing: .06em; text-transform: uppercase;
+    padding: 3px 7px; border-radius: 4px; background: var(--muted-tint); color: var(--ink-2);
+  }
+  .pill.approve { background: var(--green-tint); color: var(--green); }
+  .pill.hold { background: var(--rust-tint); color: var(--rust); }
+  .pill.watch { background: var(--gold-tint); color: var(--gold); }
+  .pill.pass { background: var(--green-tint); color: var(--green); }
+  .pill.block { background: var(--rust-tint); color: var(--rust); }
+  .findings { margin-top: 14px; border-top: 1px solid var(--rule); }
+  .finding { display: grid; grid-template-columns: 16px 1fr auto; gap: 8px; padding: 9px 0; border-bottom: 1px solid var(--rule); align-items: start; }
+  .finding:last-child { border-bottom: none; }
+  .finding .fi { font-size: 13px; margin-top: 2px; }
+  .finding .fi.pass { color: var(--green); }
+  .finding .fi.watch { color: var(--gold); }
+  .finding .fi.block { color: var(--rust); }
+  .finding .fc { font-size: 11.5px; font-weight: 600; line-height: 1.35; }
+  .finding .fd { font-size: 11px; color: var(--ink-2); line-height: 1.45; margin-top: 2px; }
+  .finding .fs { margin-top: 1px; }
+
+  /* decision card */
+  .decision { border-color: var(--rule-2); }
+  .decision .card-head { background: var(--paper-3); border-radius: 11px 11px 0 0; }
+  .decision .card-head h2 { font-family: var(--display); font-size: 17px; font-weight: 500; }
+  .decision-body { padding: 15px 16px 16px; }
+  .decision-copy { color: var(--ink-2); font-size: 12px; line-height: 1.55; margin: 0 0 12px; }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px; }
+  .seg button {
+    padding: 9px 8px; border-radius: 7px; border: 1px solid var(--rule-2);
+    background: var(--paper-2); font-size: 12px; font-weight: 600; color: var(--ink-2);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .seg button:hover { border-color: var(--ink-3); color: var(--ink); }
+  .seg button.on { background: var(--green-tint); border-color: var(--green); color: var(--green-2); }
+  .seg button.on.hold { background: var(--rust-tint); border-color: var(--rust); color: var(--rust); }
+  .field { margin-bottom: 11px; }
+  .field label { display: flex; justify-content: space-between; align-items: baseline; font-family: var(--mono); font-size: 9px; letter-spacing: .09em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 5px; }
+  .field label .opt { text-transform: none; letter-spacing: 0; color: var(--rule-2); }
+  .text-input, .money-input {
+    width: 100%; border: 1px solid var(--rule-2); background: #fffdf8; border-radius: 7px;
+    padding: 8px 10px; font-size: 13px; outline: none;
+  }
+  .text-input:focus, .money-input:focus-within { border-color: var(--green); box-shadow: 0 0 0 3px rgba(30, 90, 71, .09); }
+  .money-input { display: flex; align-items: center; gap: 6px; padding: 0 10px; }
+  .money-input span { font-family: var(--mono); color: var(--ink-3); font-size: 12px; }
+  .money-input input { border: none; background: transparent; outline: none; width: 100%; padding: 8px 0; font-family: var(--mono); font-size: 13px; }
+  textarea.text-input { resize: vertical; min-height: 58px; line-height: 1.45; }
+  .decision-actions { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
+  .decision-actions .btn { flex: 1; }
+  .decision-note { font-size: 10.5px; color: var(--ink-3); line-height: 1.45; margin-top: 9px; }
+  .notice {
+    border-radius: 8px; padding: 10px 11px; font-size: 11.5px; line-height: 1.5;
+    background: var(--blue-tint); color: var(--blue); margin-bottom: 12px;
+    border: 1px solid rgba(46, 79, 102, .12);
+  }
+  .notice.rust { background: var(--rust-tint); color: var(--rust); border-color: rgba(152, 57, 44, .14); }
+  .notice.gold { background: var(--gold-tint); color: #735012; border-color: rgba(154, 106, 28, .15); }
+  .notice.green { background: var(--green-tint); color: var(--green-2); border-color: rgba(30, 90, 71, .14); }
+  .notice b { font-weight: 600; }
+  .assignee { font-family: var(--mono); font-size: 9.5px; color: var(--ink-3); margin-top: 9px; display: flex; align-items: center; gap: 5px; }
+
+  .timeline { margin-top: 26px; }
+  .timeline h2 { font-size: 13px; font-weight: 600; margin: 0 0 10px; }
+  .tl { border-left: 1px solid var(--rule-2); margin-left: 5px; padding-left: 18px; }
+  .tl-item { position: relative; padding: 0 0 15px; }
+  .tl-item:last-child { padding-bottom: 0; }
+  .tl-item::before {
+    content: ""; position: absolute; left: -22px; top: 5px;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--paper); border: 1.5px solid var(--rule-2);
+  }
+  .tl-item.approved::before, .tl-item.paid::before { border-color: var(--green); background: var(--green); }
+  .tl-item.held::before { border-color: var(--rust); background: var(--rust); }
+  .tl-item.reopened::before { border-color: var(--gold); background: var(--gold); }
+  .tl-kind { font-family: var(--mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+  .tl-detail { font-size: 12px; color: var(--ink-2); margin-top: 2px; line-height: 1.5; }
+  .tl-meta { font-family: var(--mono); font-size: 9.5px; color: var(--ink-3); margin-top: 3px; }
+
+  .empty {
+    height: 100%; min-height: 420px; display: grid; place-items: center;
+    color: var(--ink-3); text-align: center;
+  }
+  .empty .inner { max-width: 340px; }
+  .empty i { font-size: 34px; color: var(--rule-2); }
+  .empty h2 { font-family: var(--display); font-size: 24px; font-weight: 500; color: var(--ink-2); margin: 12px 0 6px; }
+  .empty p { font-size: 12.5px; line-height: 1.6; margin: 0; }
+
+  .toast-wrap { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); z-index: 90; display: flex; flex-direction: column; gap: 8px; align-items: center; pointer-events: none; }
+  .toast {
+    background: var(--ink); color: #f5edde; border-radius: 8px; padding: 9px 14px;
+    font-size: 12px; box-shadow: 0 10px 30px rgba(29, 26, 22, .25);
+    display: flex; align-items: center; gap: 8px; max-width: 520px;
+    animation: rise .18s ease-out;
+  }
+  .toast.warn { background: var(--rust); color: #fff3ef; }
+  .toast.good { background: var(--green); color: #f1f8f3; }
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .overlay {
+    position: fixed; inset: 0; z-index: 80;
+    background: rgba(29, 26, 22, .42);
+    display: grid; place-items: center; padding: 24px;
+  }
+  .modal {
+    background: var(--paper-2); border: 1px solid var(--rule-2); border-radius: 14px;
+    max-width: 560px; width: 100%; padding: 24px; box-shadow: 0 30px 80px rgba(29, 26, 22, .3);
+    max-height: 86vh; overflow-y: auto;
+  }
+  .modal h2 { font-family: var(--display); font-size: 27px; font-weight: 500; margin: 0 0 4px; letter-spacing: -.02em; }
+  .modal .lede { color: var(--ink-2); font-size: 12.5px; line-height: 1.6; margin: 0 0 18px; }
+  .step { display: grid; grid-template-columns: 30px 1fr; gap: 11px; padding: 11px 0; border-top: 1px solid var(--rule); }
+  .step .n { font-family: var(--mono); font-size: 10px; color: var(--paper-2); background: var(--ink); width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; }
+  .step h3 { font-size: 12.5px; margin: 2px 0 3px; }
+  .step p { font-size: 11.5px; color: var(--ink-2); line-height: 1.55; margin: 0; }
+  .modal .formula { margin: 14px 0 0; }
+  .modal-close { margin-top: 18px; width: 100%; }
+
+  @media (max-width: 1180px) {
+    .shell { grid-template-columns: 68px 320px minmax(0, 1fr); }
+    .main { padding: 22px 24px 80px; }
+    .columns { grid-template-columns: 1fr; gap: 20px; }
+  }
+  @media (max-width: 860px) {
+    .shell { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr; height: auto; min-height: 100vh; overflow: visible; }
+    .rail { flex-direction: row; padding: 8px 12px; gap: 4px; }
+    .mark { margin: 0 10px 0 0; width: 32px; height: 32px; }
+    .rail-btn { width: 38px; height: 38px; }
+    .rail-btn.on::before { display: none; }
+    .rail-spacer { flex: 1; }
+    .rail-foot { display: none; }
+    .queue { border-right: none; border-bottom: 1px solid var(--rule); max-height: 46vh; }
+    .q-list { max-height: 34vh; }
+    .main { padding: 20px 16px 70px; overflow: visible; }
+    .hero { grid-template-columns: 1fr; gap: 16px; }
+    .artist-row { display: block; }
+    .stamp { margin-top: 10px; display: inline-block; }
+    .deal-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="shell" id="shell">
+  <aside class="rail">
+    <div class="mark" title="The Lantern Room"></div>
+    <button class="rail-btn on" id="nav-desk" title="Settlement desk"><i class="ti ti-receipt-2"></i></button>
+    <button class="rail-btn" id="nav-guide" title="How this works"><i class="ti ti-help-circle"></i></button>
+    <div class="rail-spacer"></div>
+    <div class="rail-foot">Lantern Room / 2026</div>
+  </aside>
+
+  <aside class="queue">
+    <div class="queue-head">
+      <span class="eyebrow">Artist settlements</span>
+      <h1>Settlement desk</h1>
+      <div class="venue-line"><span id="venue-name">The Lantern Room</span><span class="dot"></span><span>Main Room</span></div>
+    </div>
+    <div class="cycle-card">
+      <div class="cycle-row">
+        <strong>Daily cycle</strong>
+        <span class="cycle-when" id="cycle-when">Not run yet</span>
+      </div>
+      <button class="btn primary cycle-btn" id="run-cycle"><i class="ti ti-refresh"></i> Run settlement cycle</button>
+    </div>
+    <div class="filters" id="filters"></div>
+    <div class="q-list" id="q-list"></div>
+  </aside>
+
+  <main class="main">
+    <div class="sheet" id="sheet"></div>
+  </main>
+</div>
+<div class="toast-wrap" id="toasts"></div>
+<div id="modal-root"></div>
+
+<script>
+(function () {
+  var cfg = window.__LEMMA_CONFIG__ || {};
+  var base = (cfg.apiUrl || window.location.origin).replace(/\/$/, "");
+  var s = document.createElement("script");
+  s.src = base + "/public/sdk/lemma-client.js";
+  s.onload = boot;
+  s.onerror = function () {
+    document.getElementById("sheet").innerHTML = '<div class="empty"><div class="inner"><i class="ti ti-plug-x"></i><h2>The SDK did not load</h2><p>Refresh the page. If it keeps failing, open the pod from Lemma rather than a saved copy of this file.</p></div></div>';
+  };
+  document.head.appendChild(s);
+})();
+
+var client;
+var ST = {
+  settlements: [], shows: [], events: [], settings: null,
+  runsBySettlement: {}, members: [], currentUserId: null, currentUserEmail: null, currentPodMemberId: null,
+  selected: null, filter: "attention", loading: true,
+  cycleBusy: false, submitting: {}, ui: {}, toasts: [], modal: false,
+  lastCycle: null, liveTimer: null
+};
+
+var STATUS_LABEL = {
+  draft: "Draft",
+  awaiting_approval: "Awaiting approval",
+  approved: "Approved",
+  held: "Held",
+  paid: "Paid"
+};
+
+function esc(x) {
+  return String(x == null ? "" : x).replace(/[&<>"]/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+  });
+}
+function money(cents) {
+  var n = Number(cents || 0) / 100;
+  return n.toLocaleString("en-US", { style: "currency", currency: "USD" });
+}
+function moneyWhole(cents) {
+  var n = Math.round(Number(cents || 0) / 100);
+  return n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+}
+function toCents(value) {
+  var cleaned = String(value == null ? "" : value).replace(/[^0-9.\-]/g, "");
+  if (!cleaned) return null;
+  var n = Number(cleaned);
+  if (!isFinite(n) || n < 0) return null;
+  return Math.round(n * 100);
+}
+function pct(bps) { return (Number(bps || 0) / 100).toFixed(2) + "%"; }
+function shortDate(iso) {
+  if (!iso) return "";
+  var d = new Date(String(iso).length <= 10 ? iso + "T12:00:00Z" : iso);
+  if (isNaN(d.getTime())) return String(iso);
+  return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
+}
+function dateOnly(iso) {
+  if (!iso) return "";
+  var d = new Date(String(iso).length <= 10 ? iso + "T12:00:00Z" : iso);
+  if (isNaN(d.getTime())) return String(iso);
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+function timeAgo(iso) {
+  if (!iso) return "";
+  var d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  var diff = Math.max(0, Date.now() - d.getTime());
+  var mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return mins + "m ago";
+  var hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + "h ago";
+  var days = Math.floor(hrs / 24);
+  return days + "d ago";
+}
+function showById(id) {
+  for (var i = 0; i < ST.shows.length; i++) if (ST.shows[i].id === id) return ST.shows[i];
+  return null;
+}
+function settlementById(id) {
+  for (var i = 0; i < ST.settlements.length; i++) if (ST.settlements[i].id === id) return ST.settlements[i];
+  return null;
+}
+function eventsFor(id) {
+  return ST.events.filter(function (e) { return e.settlement_id === id; }).sort(function (a, b) {
+    return String(a.occurred_at || "").localeCompare(String(b.occurred_at || ""));
+  });
+}
+function parseReview(value) {
+  if (!value) return {};
+  if (typeof value === "string") {
+    try { return JSON.parse(value); } catch (e) { return {}; }
+  }
+  return value;
+}
+function statusRank(status) {
+  return { awaiting_approval: 0, held: 1, draft: 2, approved: 3, paid: 4 }[status] == null ? 5 : { awaiting_approval: 0, held: 1, draft: 2, approved: 3, paid: 4 }[status];
+}
+function sortedSettlements() {
+  return ST.settlements.slice().sort(function (a, b) {
+    var ra = statusRank(a.status), rb = statusRank(b.status);
+    if (ra !== rb) return ra - rb;
+    return String((showById(b.show_id) || {}).show_date || "").localeCompare(String((showById(a.show_id) || {}).show_date || ""));
+  });
+}
+function visibleSettlements() {
+  var list = sortedSettlements();
+  if (ST.filter === "attention") return list.filter(function (x) { return x.status === "awaiting_approval" || x.status === "held" || x.status === "approved"; });
+  if (ST.filter === "progress") return list.filter(function (x) { return x.status === "draft"; });
+  if (ST.filter === "settled") return list.filter(function (x) { return x.status === "paid"; });
+  return list;
+}
+function uiFor(settlement) {
+  if (!ST.ui[settlement.id]) {
+    ST.ui[settlement.id] = {
+      decision: "approve",
+      payout: (Number(settlement.calculated_payout_cents || 0) / 100).toFixed(2),
+      note: "",
+      payRef: "",
+      reopen: ""
+    };
+  }
+  return ST.ui[settlement.id];
+}
+function toast(text, kind) {
+  var id = "t" + Math.random().toString(36).slice(2);
+  ST.toasts.push({ id: id, text: text, kind: kind || "" });
+  renderToasts();
+  setTimeout(function () {
+    ST.toasts = ST.toasts.filter(function (t) { return t.id !== id; });
+    renderToasts();
+  }, 4200);
+}
+function renderToasts() {
+  document.getElementById("toasts").innerHTML = ST.toasts.map(function (t) {
+    return '<div class="toast ' + esc(t.kind) + '"><i class="ti ' + (t.kind === "good" ? "ti-check" : t.kind === "warn" ? "ti-alert-triangle" : "ti-info-circle") + '"></i><span>' + esc(t.text) + "</span></div>";
+  }).join("");
+}
+
+async function boot() {
+  client = new window.LemmaClient.LemmaClient();
+  var state = await client.initialize();
+  if (state.status !== "authenticated") { client.auth.redirectToAuth(); return; }
+  ST.currentUserId = state.user && state.user.id;
+  ST.currentUserEmail = state.user && state.user.email;
+  await loadAll();
+  claimDesk();
+  render();
+  startLive();
+  setInterval(function () {
+    if (!document.activeElement || !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)) {
+      loadAll();
+    }
+  }, 22000);
+}
+
+async function loadAll() {
+  try {
+    var pid = (window.__LEMMA_CONFIG__ || {}).podId;
+    var res = await Promise.all([
+      client.records.listAll("settlements", { pageSize: 500 }),
+      client.records.listAll("shows", { pageSize: 500 }),
+      client.records.listAll("settlement_events", { pageSize: 1000, sort: [{ field: "occurred_at", direction: "asc" }] }),
+      client.records.list("settings", { limit: 5 }),
+      pid ? client.podMembers.list(pid) : Promise.resolve({ items: [] }),
+      client.workflows.runs.listInPod({ status: ["WAITING"], limit: 50 }).catch(function () { return { items: [] }; })
+    ]);
+    ST.settlements = res[0] || [];
+    ST.shows = res[1] || [];
+    ST.events = res[2] || [];
+    ST.settings = ((res[3] || {}).items || [])[0] || null;
+    ST.members = (res[4] || {}).items || [];
+    var me = ST.members.filter(function (m) { return m.user_id === ST.currentUserId; })[0];
+    ST.currentPodMemberId = me ? me.pod_member_id : null;
+
+    var waiting = (res[5] || {}).items || [];
+    var full = await Promise.all(waiting.map(function (item) {
+      return client.workflows.runs.get(item.id).then(function (run) { return run; }).catch(function () { return null; });
+    }));
+    ST.runsBySettlement = {};
+    full.forEach(function (run) {
+      if (!run || run.status !== "WAITING" || !run.active_wait) return;
+      var ctx = run.execution_context || {};
+      var attach = ctx.attach || {};
+      if (!attach.settlement_id) return;
+      ST.runsBySettlement[attach.settlement_id] = { runId: run.id, wait: run.active_wait, title: run.title || "" };
+    });
+
+    ST.lastCycle = ST.settings && ST.settings.last_cycle_at ? ST.settings.last_cycle_at : null;
+    if (!ST.selected && ST.settlements.length) {
+      var first = visibleSettlements()[0] || sortedSettlements()[0];
+      if (first) ST.selected = first.id;
+    }
+    if (ST.selected && !settlementById(ST.selected)) {
+      var next = visibleSettlements()[0] || sortedSettlements()[0];
+      ST.selected = next ? next.id : null;
+    }
+    ST.loading = false;
+    render();
+  } catch (e) {
+    ST.loading = false;
+    document.getElementById("sheet").innerHTML = '<div class="empty"><div class="inner"><i class="ti ti-alert-triangle"></i><h2>Could not load the desk</h2><p>' + esc(e.message || e) + "</p></div></div>";
+  }
+}
+
+async function claimDesk() {
+  if (!ST.settings || ST.settings.approval_member_id || !ST.currentPodMemberId) return;
+  try {
+    await client.records.update("settings", ST.settings.id, { approval_member_id: ST.currentPodMemberId });
+    ST.settings.approval_member_id = ST.currentPodMemberId;
+    toast("This desk is now assigned to you for payout approval.", "good");
+  } catch (e) {
+    // Claiming is a convenience. The unassigned form path still works.
+  }
+}
+
+function startLive() {
+  try {
+    client.datastore.watchChanges({
+      onChange: function () {
+        clearTimeout(ST.liveTimer);
+        ST.liveTimer = setTimeout(function () {
+          if (!document.activeElement || !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)) loadAll();
+        }, 350);
+      }
+    });
+  } catch (e) {
+    // The 22 second poll already covers pods where streaming is unavailable.
+  }
+}
+
+function memberName(podMemberId) {
+  for (var i = 0; i < ST.members.length; i++) {
+    if (ST.members[i].pod_member_id === podMemberId) {
+      return ST.members[i].user_name || ST.members[i].user_email || ST.members[i].email || "Pod member";
+    }
+  }
+  return "";
+}
+function personLabel(value) {
+  if (!value) return "";
+  var byId = memberName(value);
+  if (byId) return byId;
+  for (var i = 0; i < ST.members.length; i++) {
+    var m = ST.members[i];
+    if (m.user_email === value || m.email === value || m.user_id === value) {
+      return m.user_name || m.user_email || m.email || "Pod member";
+    }
+  }
+  return String(value);
+}
+
+/* ---------- render ---------- */
+function render() {
+  if (ST.loading) {
+    document.getElementById("sheet").innerHTML = '<div class="empty"><div class="inner"><i class="ti ti-loader spin"></i><h2>Opening the desk</h2><p>Reading settlements, ticket exports, and the approval queue.</p></div></div>';
+    return;
+  }
+  var active = document.activeElement;
+  var focusId = active && active.id ? active.id : null;
+  var selStart = null;
+  try { selStart = active && active.selectionStart; } catch (e) {}
+
+  renderChrome();
+  renderFilters();
+  renderQueue();
+  renderSheet();
+
+  if (focusId) {
+    var el = document.getElementById(focusId);
+    if (el) {
+      el.focus();
+      try { if (selStart != null && el.setSelectionRange) el.setSelectionRange(selStart, selStart); } catch (e) {}
+    }
+  }
+}
+
+function renderChrome() {
+  if (ST.settings && ST.settings.venue_name) {
+    document.getElementById("venue-name").textContent = ST.settings.venue_name;
+  }
+  var when = document.getElementById("cycle-when");
+  when.textContent = ST.lastCycle ? "Last run " + timeAgo(ST.lastCycle) : "Not run yet";
+  var btn = document.getElementById("run-cycle");
+  btn.disabled = ST.cycleBusy;
+  btn.innerHTML = ST.cycleBusy ? '<i class="ti ti-loader spin"></i> Preparing packets' : '<i class="ti ti-refresh"></i> Run settlement cycle';
+}
+
+function renderFilters() {
+  var all = ST.settlements.length;
+  var att = ST.settlements.filter(function (x) { return x.status === "awaiting_approval" || x.status === "held" || x.status === "approved"; }).length;
+  var prog = ST.settlements.filter(function (x) { return x.status === "draft"; }).length;
+  var done = ST.settlements.filter(function (x) { return x.status === "paid"; }).length;
+  var items = [
+    ["attention", "Needs you", att],
+    ["progress", "In review", prog],
+    ["settled", "Settled", done],
+    ["all", "All", all]
+  ];
+  document.getElementById("filters").innerHTML = items.map(function (it) {
+    return '<button class="chip ' + (ST.filter === it[0] ? "on" : "") + '" data-filter="' + it[0] + '">' + esc(it[1]) + ' <span class="ct">' + it[2] + "</span></button>";
+  }).join("");
+  Array.prototype.forEach.call(document.querySelectorAll("[data-filter]"), function (b) {
+    b.onclick = function () { ST.filter = b.getAttribute("data-filter"); render(); };
+  });
+}
+
+function renderQueue() {
+  var list = visibleSettlements();
+  var host = document.getElementById("q-list");
+  if (!list.length) {
+    host.innerHTML = '<div class="q-empty">' + (ST.filter === "attention" ? "Nothing is waiting on you. The next cycle opens a review when a show closes, and an approved payout returns here until its transfer is recorded." : "No settlements in this view yet.") + "</div>";
+    return;
+  }
+  var groups = {};
+  list.forEach(function (s) {
+    var key = s.status === "awaiting_approval" || s.status === "held" ? "Needs a decision"
+      : s.status === "draft" ? "In review"
+      : s.status === "approved" ? "Ready to pay"
+      : "Settled";
+    (groups[key] = groups[key] || []).push(s);
+  });
+  var order = ["Needs a decision", "In review", "Ready to pay", "Settled"];
+  var html = "";
+  order.forEach(function (key) {
+    var rows = groups[key];
+    if (!rows || !rows.length) return;
+    html += '<div class="group-label">' + esc(key) + "<span>" + rows.length + "</span></div>";
+    rows.forEach(function (s) {
+      var show = showById(s.show_id) || {};
+      var review = parseReview(s.agent_review);
+      var amount = s.status === "paid" || s.status === "approved" ? (s.approved_payout_cents || s.calculated_payout_cents) : s.calculated_payout_cents;
+      var flags = "";
+      if (s.status === "held") flags += '<span class="tiny-chip red">On hold</span>';
+      if (s.status === "awaiting_approval") flags += '<span class="tiny-chip amber">Your call</span>';
+      if (s.status === "draft") flags += '<span class="tiny-chip">Reviewing</span>';
+      if (s.status === "approved") flags += '<span class="tiny-chip green">Ready to pay</span>';
+      if (s.status === "paid") flags += '<span class="tiny-chip green">Paid</span>';
+      var blocks = (review.findings || []).filter(function (f) { return f.status === "block"; }).length;
+      if (blocks && s.status !== "paid") flags += '<span class="tiny-chip red">' + blocks + " block" + (blocks === 1 ? "" : "s") + "</span>";
+      html += '<button class="q-row ' + (ST.selected === s.id ? "sel" : "") + '" data-pick="' + esc(s.id) + '">'
+        + '<div class="q-top"><span class="q-name">' + esc(show.artist || "Unknown artist") + '</span><span class="q-amt">' + money(amount) + "</span></div>"
+        + '<div class="q-meta"><span>' + esc(dateOnly(show.show_date)) + "</span><span>&middot;</span><span>" + esc(STATUS_LABEL[s.status] || s.status) + "</span></div>"
+        + (flags ? '<div class="q-flags">' + flags + "</div>" : "")
+        + "</button>";
+    });
+  });
+  host.innerHTML = html;
+  Array.prototype.forEach.call(host.querySelectorAll("[data-pick]"), function (b) {
+    b.onclick = function () { ST.selected = b.getAttribute("data-pick"); render(); };
+  });
+}
+
+function findingIcon(status) {
+  if (status === "pass") return '<i class="ti ti-check fi pass"></i>';
+  if (status === "watch") return '<i class="ti ti-alert-circle fi watch"></i>';
+  return '<i class="ti ti-x fi block"></i>';
+}
+
+function renderSheet() {
+  var host = document.getElementById("sheet");
+  var s = ST.selected ? settlementById(ST.selected) : null;
+  if (!s) {
+    host.innerHTML = '<div class="empty"><div class="inner"><i class="ti ti-receipt"></i><h2>The desk is clear</h2><p>Run the settlement cycle to turn played shows into reviewable packets, or pick a settlement from the queue.</p></div></div>';
+    return;
+  }
+  var show = showById(s.show_id) || {};
+  var review = parseReview(s.agent_review);
+  var findings = review.findings || [];
+  var ui = uiFor(s);
+  var run = ST.runsBySettlement[s.id] || null;
+  var events = eventsFor(s.id);
+  var paidAmount = s.status === "paid" || s.status === "approved" ? (s.approved_payout_cents || 0) : s.calculated_payout_cents;
+
+  var html = '<div class="sheet-top">'
+    + '<div class="crumb">Settlement / <b>' + esc(show.external_ref || s.id.slice(0, 8)) + "</b></div>"
+    + '<span class="stamp ' + esc(s.status) + '">' + esc(STATUS_LABEL[s.status] || s.status) + "</span>"
+    + "</div>";
+
+  html += '<div class="artist-row"><div>'
+    + '<h1 class="artist">' + esc(show.artist || "Unknown artist") + "</h1>"
+    + '<div class="show-meta"><span>' + esc(shortDate(show.show_date)) + '</span><span class="sep">/</span><span>' + esc(show.room || "Main Room") + '</span><span class="sep">/</span><span class="deal-tag">' + esc(s.deal_type) + " deal</span></div>"
+    + "</div></div>";
+
+  html += '<div class="hero">'
+    + '<div><span class="eyebrow">' + (s.status === "paid" || s.status === "approved" ? "Approved payout" : "Calculated payout") + '</span>'
+    + '<div class="amount">' + money(paidAmount) + "</div>"
+    + (s.status === "approved" || s.status === "paid" ? '<div class="review-sub">Calculated ' + money(s.calculated_payout_cents) + (s.approved_payout_cents !== s.calculated_payout_cents ? " / changed by the manager" : " / unchanged") + "</div>" : "")
+    + "</div>"
+    + '<div class="hero-side">'
+    + '<div class="stat"><div class="k">Net box office</div><div class="v">' + money(s.net_box_office_cents) + "</div></div>"
+    + '<div class="stat"><div class="k">Artist pool</div><div class="v">' + money(s.pool_cents) + "</div></div>"
+    + '<div class="stat"><div class="k">Recouped</div><div class="v">' + money(s.recouped_cents) + "</div></div>"
+    + '<div class="stat"><div class="k">House absorbed</div><div class="v ' + (Number(s.over_cap_cents) > 0 ? "red" : "") + '">' + money(s.over_cap_cents) + "</div></div>"
+    + "</div></div>";
+
+  html += '<div class="columns"><div>';
+
+  // ledger
+  html += '<section class="card"><div class="card-head"><h2>The packet</h2><span class="hint">' + esc(s.calculation_version || "2026-10") + "</span></div><div class=\"card-body\">";
+  html += '<table class="ledger">'
+    + '<tr><td>Ticket revenue<span class="note">Paid admissions at face value</span></td><td>' + money(s.ticket_revenue_cents) + "</td></tr>"
+    + '<tr><td>Processing fees<span class="note">Withheld by the ticketing platform</span></td><td class="neg">-' + money(s.fees_cents) + "</td></tr>"
+    + '<tr class="sub"><td>Net box office</td><td>' + money(s.net_box_office_cents) + "</td></tr>"
+    + '<tr><td>Recoupable expenses</td><td>' + money(s.recoupable_total_cents) + "</td></tr>"
+    + '<tr><td>Deal cap on recoupment</td><td>' + money(s.recoup_cap_cents) + "</td></tr>"
+    + '<tr><td>Recouped from the pool</td><td class="neg">-' + money(s.recouped_cents) + "</td></tr>"
+    + (Number(s.over_cap_cents) > 0 ? '<tr><td>Above the cap<span class="note">Absorbed by the venue, never the artist</span></td><td class="neg">' + money(s.over_cap_cents) + "</td></tr>" : "")
+    + '<tr class="sub"><td>Artist pool</td><td>' + money(s.pool_cents) + "</td></tr>"
+    + '<tr class="total"><td>Calculated payout</td><td>' + money(s.calculated_payout_cents) + "</td></tr>"
+    + "</table></div></section>";
+
+  // deal
+  var dealLine = "";
+  if (s.deal_type === "FLAT") dealLine = "Flat guarantee of " + money(s.guarantee_cents) + ".";
+  else if (s.deal_type === "PERCENTAGE") dealLine = pct(s.percentage_bps) + " of the pool, no guarantee.";
+  else dealLine = "Greater of " + money(s.guarantee_cents) + " or " + pct(s.percentage_bps) + " of the pool.";
+  html += '<section class="card" style="margin-top:16px"><div class="card-head"><h2>Deal terms</h2><span class="hint">' + esc(show.external_ref || "") + '</span></div><div class="card-body">'
+    + '<div class="deal-grid">'
+    + '<div><div class="k">Structure</div><div class="v">' + esc(dealLine) + "</div></div>"
+    + '<div><div class="k">Guarantee</div><div class="v">' + money(s.guarantee_cents) + "</div></div>"
+    + '<div><div class="k">Artist share</div><div class="v">' + pct(s.percentage_bps) + "</div></div>"
+    + '<div><div class="k">Expense cap</div><div class="v">' + money(s.recoup_cap_cents) + "</div></div>"
+    + "</div>"
+    + '<div class="formula">FLAT      payout = guarantee\nPERCENTAGE payout = pool x share, rounded half up\nVS        payout = max(guarantee, pool x share)</div>'
+    + "</div></section>";
+
+  html += "</div><div>";
+
+  // review
+  html += '<section class="card"><div class="card-head"><h2>Agent review</h2><span class="hint">settlement-reviewer</span></div><div class="card-body">';
+  if (!review.headline && !findings.length) {
+    html += '<p class="decision-copy">The reviewer has not returned a packet yet. The review starts automatically when the settlement is prepared; this card fills in once the audit is stored.</p>';
+  } else {
+    var rec = review.recommendation || "hold";
+    html += '<div class="review-summary"><div class="review-mark ' + (rec === "approve" ? "" : "hold") + '"><i class="ti ' + (rec === "approve" ? "ti-check" : "ti-hand-stop") + '"></i></div>'
+      + '<div><h3 class="review-headline">' + esc(review.headline || (rec === "approve" ? "Ready for your decision" : "Hold recommended")) + "</h3>"
+      + '<div class="review-sub">' + esc(review.reviewer_note || "") + "</div></div></div>";
+    html += '<div class="review-meta"><span class="pill ' + esc(rec) + '">' + esc(rec === "approve" ? "Recommend approve" : "Recommend hold") + "</span>"
+      + '<span class="pill">' + Math.round(Number(review.confidence || 0) * 100) + "% confidence</span>"
+      + '<span class="pill">' + esc(review.reviewed_at ? timeAgo(review.reviewed_at) : "not reviewed") + "</span></div>";
+    if (findings.length) {
+      html += '<div class="findings">' + findings.map(function (f) {
+        return '<div class="finding">' + findingIcon(f.status)
+          + '<div><div class="fc">' + esc(f.check) + '</div><div class="fd">' + esc(f.detail) + "</div></div>"
+          + '<div class="fs"><span class="pill ' + esc(f.status) + '">' + esc(f.status) + "</span></div></div>";
+      }).join("") + "</div>";
+    }
+  }
+  html += "</div></section>";
+
+  // decision
+  html += '<section class="card decision" style="margin-top:16px"><div class="card-head"><h2>Your call</h2><span class="hint">Human gate</span></div><div class="decision-body">';
+  if (s.status === "awaiting_approval") {
+    if (!run) {
+      html += '<div class="notice gold"><b>No open form found.</b> The review may still be running, or the form was already answered in another tab. Refresh in a moment, or reopen the review if it stays like this.</div>';
+      html += reopenBlock(s, ui, "Reopen review");
+    } else {
+      var assigned = run.wait.assigned_pod_member_id || "";
+      var assignedName = assigned ? memberName(assigned) : "";
+      var canAct = !assigned || !ST.currentPodMemberId || assigned === ST.currentPodMemberId;
+      if (!canAct) {
+        html += '<div class="notice blue"><b>Waiting on ' + esc(assignedName || "another pod member") + ".</b> Only the assigned approver can answer this form. Change the approver in settings if the desk has moved.</div>";
+      } else {
+        html += '<p class="decision-copy">The reviewer has finished. Approve the calculated payout, change it with a written reason, or hold the settlement until the packet is fixed.</p>';
+        html += '<div class="seg">'
+          + '<button id="dec-approve" class="' + (ui.decision === "approve" ? "on" : "") + '"><i class="ti ti-check"></i> Approve</button>'
+          + '<button id="dec-hold" class="hold ' + (ui.decision === "hold" ? "on hold" : "") + '"><i class="ti ti-hand-stop"></i> Hold</button>'
+          + "</div>";
+        html += '<div class="field"><label for="payout-' + esc(s.id) + '">Approved payout <span class="opt">' + (ui.decision === "hold" ? "not paid on a hold" : "dollars") + "</span></label>"
+          + '<div class="money-input"><span>$</span><input id="payout-' + esc(s.id) + '" inputmode="decimal" value="' + esc(ui.payout) + '" ' + (ui.decision === "hold" ? "disabled" : "") + "></div></div>";
+        html += '<div class="field"><label for="note-' + esc(s.id) + '">Note <span class="opt">' + (ui.decision === "approve" && toCents(ui.payout) !== Number(s.calculated_payout_cents) ? "required for a changed amount" : "optional") + "</span></label>"
+          + '<textarea id="note-' + esc(s.id) + '" class="text-input" placeholder="What should the next person know?">' + esc(ui.note) + "</textarea></div>";
+        html += '<div class="decision-actions"><button class="btn ' + (ui.decision === "hold" ? "rust" : "primary") + '" id="submit-decision" ' + (ST.submitting[s.id] ? "disabled" : "") + ">"
+          + (ST.submitting[s.id] ? '<i class="ti ti-loader spin"></i> Recording' : ui.decision === "hold" ? '<i class="ti ti-hand-stop"></i> Hold settlement' : '<i class="ti ti-check"></i> Approve ' + money(toCents(ui.payout) == null ? 0 : toCents(ui.payout)))
+          + "</button></div>";
+        html += '<div class="assignee"><i class="ti ti-user-check"></i> ' + (assigned ? "Assigned to " + esc(assignedName || "pod member") : "Any pod member can answer") + "</div>";
+      }
+    }
+  } else if (s.status === "held") {
+    var lastHeld = events.slice().reverse().filter(function (e) { return e.kind === "held"; })[0];
+    html += '<div class="notice rust"><b>Held.</b> ' + esc((lastHeld && lastHeld.detail) || s.review_note || "The payout is paused until the packet is fixed.") + "</div>";
+    html += reopenBlock(s, ui, "Reopen review");
+  } else if (s.status === "draft") {
+    html += '<div class="notice blue"><b>In review.</b> The settlement reviewer is checking the ticket exports, receipts, comps, and deal math. The form appears here when the audit lands.</div>';
+    html += '<button class="btn" id="refresh-one"><i class="ti ti-refresh"></i> Check again</button>';
+  } else if (s.status === "approved") {
+    html += '<div class="notice green"><b>Approved at ' + money(s.approved_payout_cents) + ".</b> Record the transfer reference when the bank confirms it. This is the last step.</div>";
+    html += '<div class="field"><label for="payref-' + esc(s.id) + '">Payment reference <span class="opt">bank, ACH, or check number</span></label>'
+      + '<input id="payref-' + esc(s.id) + '" class="text-input" value="' + esc(ui.payRef) + '" placeholder="ACH-261015-01"></div>';
+    html += '<div class="decision-actions"><button class="btn primary" id="mark-paid" ' + (ST.submitting[s.id] ? "disabled" : "") + ">"
+      + (ST.submitting[s.id] ? '<i class="ti ti-loader spin"></i> Recording' : '<i class="ti ti-building-bank"></i> Record payment') + "</button></div>";
+    html += '<div class="decision-note">Approved by ' + esc(personLabel(s.approved_by) || "the desk") + (s.approved_at ? " on " + esc(dateOnly(s.approved_at)) : "") + ". A paid settlement cannot be reopened.</div>";
+  } else if (s.status === "paid") {
+    html += '<div class="notice green"><b>Paid ' + money(s.approved_payout_cents) + ".</b> Reference " + esc(s.payment_ref || "not recorded") + (s.paid_at ? " on " + esc(dateOnly(s.paid_at)) : "") + ". This settlement is closed.</div>";
+  }
+  html += "</div></section>";
+
+  html += "</div></div>";
+
+  // timeline
+  html += '<section class="timeline"><h2>Activity</h2><div class="tl">' + events.map(function (e) {
+    return '<div class="tl-item ' + esc(e.kind) + '"><div class="tl-kind">' + esc(String(e.kind || "").replace("_", " ")) + "</div>"
+      + '<div class="tl-detail">' + esc(e.detail || "") + "</div>"
+      + '<div class="tl-meta">' + esc(e.actor || "system") + " / " + esc(timeAgo(e.occurred_at)) + "</div></div>";
+  }).join("") + "</div></section>";
+
+  host.innerHTML = html;
+  bindSheet(s, ui, run);
+}
+
+function reopenBlock(s, ui, label) {
+  return '<div class="field"><label for="reopen-' + esc(s.id) + '">What changed? <span class="opt">goes into the audit trail</span></label>'
+    + '<textarea id="reopen-' + esc(s.id) + '" class="text-input" placeholder="The missing receipt arrived; reopen the packet.">' + esc(ui.reopen) + "</textarea></div>"
+    + '<button class="btn" id="reopen-settlement" ' + (ST.submitting[s.id] ? "disabled" : "") + ">"
+    + (ST.submitting[s.id] ? '<i class="ti ti-loader spin"></i> Reopening' : '<i class="ti ti-rotate-clockwise"></i> ' + esc(label)) + "</button>";
+}
+
+function bindSheet(s, ui, run) {
+  var approve = document.getElementById("dec-approve");
+  var hold = document.getElementById("dec-hold");
+  if (approve) approve.onclick = function () { ui.decision = "approve"; render(); };
+  if (hold) hold.onclick = function () { ui.decision = "hold"; render(); };
+
+  var payout = document.getElementById("payout-" + s.id);
+  if (payout) payout.oninput = function () { ui.payout = payout.value; };
+  var note = document.getElementById("note-" + s.id);
+  if (note) note.oninput = function () { ui.note = note.value; };
+  var payref = document.getElementById("payref-" + s.id);
+  if (payref) payref.oninput = function () { ui.payRef = payref.value; };
+  var reopen = document.getElementById("reopen-" + s.id);
+  if (reopen) reopen.oninput = function () { ui.reopen = reopen.value; };
+
+  var submit = document.getElementById("submit-decision");
+  if (submit) submit.onclick = function () { submitDecision(s, ui, run); };
+  var reopenBtn = document.getElementById("reopen-settlement");
+  if (reopenBtn) reopenBtn.onclick = function () { reopenSettlement(s, ui); };
+  var paidBtn = document.getElementById("mark-paid");
+  if (paidBtn) paidBtn.onclick = function () { markPaid(s, ui); };
+  var refresh = document.getElementById("refresh-one");
+  if (refresh) refresh.onclick = function () { toast("Checking for the review...", ""); loadAll(); };
+}
+
+/* ---------- actions ---------- */
+async function submitDecision(s, ui, run) {
+  if (!run) { toast("No open approval form. Refresh or reopen the review.", "warn"); return; }
+  var cents = toCents(ui.payout);
+  if (cents == null) { toast("Enter a valid payout amount.", "warn"); return; }
+  if (ui.decision === "approve" && cents !== Number(s.calculated_payout_cents) && !String(ui.note || "").trim()) {
+    toast("A changed payout needs a note that explains the difference.", "warn");
+    return;
+  }
+  ST.submitting[s.id] = true;
+  render();
+  try {
+    await client.workflows.runs.submitForm(run.runId, {
+      node_id: run.wait.node_id,
+      inputs: {
+        decision: ui.decision,
+        approved_payout_cents: cents,
+        note: String(ui.note || "").trim(),
+        approver_email: ST.currentUserEmail || ""
+      }
+    });
+    if (ui.decision === "hold") toast("Payout held. The settlement stays on the desk.", "warn");
+    else toast("Approval recorded. The payout is ready to pay.", "good");
+    setTimeout(loadAll, 1200);
+    setTimeout(loadAll, 4200);
+  } catch (e) {
+    toast("Could not submit the form: " + (e.message || e), "warn");
+  }
+  ST.submitting[s.id] = false;
+  render();
+}
+
+async function reopenSettlement(s, ui) {
+  var reason = String(ui.reopen || "").trim();
+  if (reason.length < 5) { toast("Add a short reason so the trail explains the reopen.", "warn"); return; }
+  ST.submitting[s.id] = true;
+  render();
+  try {
+    var res = await client.functions.run("reopen_settlement", { input: { settlement_id: s.id, reason: reason } });
+    var out = (res && (res.output_data || res.output)) || {};
+    if (out.can_reopen === false) toast(out.message || "A review is already open.", "warn");
+    else toast("Review reopened. The reviewer will pick it up shortly.", "good");
+    setTimeout(loadAll, 1200);
+    setTimeout(loadAll, 5000);
+  } catch (e) {
+    toast("Could not reopen: " + (e.message || e), "warn");
+  }
+  ST.submitting[s.id] = false;
+  render();
+}
+
+async function markPaid(s, ui) {
+  var ref = String(ui.payRef || "").trim();
+  if (ref.length < 3) { toast("Enter the bank or check reference first.", "warn"); return; }
+  ST.submitting[s.id] = true;
+  render();
+  try {
+    await client.functions.run("mark_paid", { input: { settlement_id: s.id, payment_ref: ref } });
+    toast("Payment recorded. The settlement is closed.", "good");
+    setTimeout(loadAll, 1000);
+  } catch (e) {
+    toast("Could not record the payment: " + (e.message || e), "warn");
+  }
+  ST.submitting[s.id] = false;
+  render();
+}
+
+async function runCycle() {
+  if (ST.cycleBusy) return;
+  ST.cycleBusy = true;
+  renderChrome();
+  try {
+    var res = await client.functions.run("prepare_settlements", { input: {} });
+    var out = (res && (res.output_data || res.output)) || {};
+    var made = Number(out.prepared || 0);
+    var skipped = Number(out.skipped || 0);
+    if (made === 0) toast("Cycle finished. No new packets to prepare" + (skipped ? " (" + skipped + " already settled or not played)." : "."), "");
+    else toast("Cycle finished. " + made + " packet" + (made === 1 ? "" : "s") + " prepared for review.", "good");
+    setTimeout(loadAll, 1200);
+    setTimeout(loadAll, 5000);
+    setTimeout(loadAll, 11000);
+  } catch (e) {
+    toast("Cycle failed: " + (e.message || e), "warn");
+  }
+  ST.cycleBusy = false;
+  renderChrome();
+}
+
+/* ---------- modal ---------- */
+function showGuide() {
+  ST.modal = true;
+  document.getElementById("modal-root").innerHTML = '<div class="overlay" id="overlay"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="guide-title">'
+    + '<span class="eyebrow">How the desk works</span>'
+    + '<h2 id="guide-title">The math is code. The judgment is human.</h2>'
+    + '<p class="lede">Every settlement is prepared by a function with one formula, audited by an agent that cannot move money, and paid only after a person answers a form.</p>'
+    + '<div class="step"><div class="n">1</div><div><h3>The cycle prepares the packet</h3><p>At 09:00 the scheduled workflow calls <b>prepare_settlements</b>. It reads both ticket channels, subtracts processing fees, applies the recoup cap, and snapshots the deal. The calculation is deterministic and stored on the row.</p></div></div>'
+    + '<div class="step"><div class="n">2</div><div><h3>The reviewer audits, and cannot edit</h3><p>The <b>settlement-reviewer</b> agent checks ticket sources, fee share, receipts, comps, the cap, and the arithmetic. It receives one fixed evidence packet and has no tools or grants, so it cannot approve or change a cent.</p></div></div>'
+    + '<div class="step"><div class="n">3</div><div><h3>A person answers the form</h3><p>If an approver is configured, the form lands on their desk. Otherwise any pod member can answer it. The form writes the decision back through <b>record_review</b>; a changed payout needs a written note.</p></div></div>'
+    + '<div class="step"><div class="n">4</div><div><h3>Payment closes the loop</h3><p>An approved settlement waits for a transfer reference. <b>mark_paid</b> records it and refuses anything that was not approved. A paid settlement can never be reopened; a held one can.</p></div></div>'
+    + '<div class="formula">net      = tickets - processor fees\nrecouped = min(recoupable, deal cap)\npool     = max(0, net - recouped)\nFLAT     = guarantee\nPERCENT  = pool x share, half-up\nVS       = max(guarantee, percent)</div>'
+    + '<button class="btn modal-close" id="close-guide">Back to the desk</button>'
+    + "</div></div>";
+  document.getElementById("close-guide").onclick = closeGuide;
+  document.getElementById("overlay").onclick = function (e) { if (e.target.id === "overlay") closeGuide(); };
+}
+function closeGuide() {
+  ST.modal = false;
+  document.getElementById("modal-root").innerHTML = "";
+}
+
+/* ---------- wire chrome ---------- */
+document.getElementById("run-cycle").onclick = runCycle;
+document.getElementById("nav-guide").onclick = showGuide;
+document.getElementById("nav-desk").onclick = function () {
+  ST.filter = "attention";
+  render();
+};
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape" && ST.modal) closeGuide();
+});
+</script>
+</body>
+</html>

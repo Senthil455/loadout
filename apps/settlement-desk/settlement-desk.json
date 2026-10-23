@@ -1,0 +1,5 @@
+{
+  "name": "settlement-desk",
+  "description": "The Lantern Room's settlement desk: a queue of shows waiting on money, the full packet behind each payout, the reviewer's findings, and the human approval gate.",
+  "public_slug": "settlement-desk"
+}

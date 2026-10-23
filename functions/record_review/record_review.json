@@ -1,0 +1,14 @@
+{
+  "name": "record_review",
+  "description": "Record the manager's decision on an awaiting_approval settlement. Approval stores the approved amount, the approver, and closes the review request; a hold leaves no payable amount and closes the same request. A payout different from the calculated amount requires a written note. Idempotent once the settlement is decided.",
+  "type": "API",
+  "code": { "$file": "code.py" },
+  "permissions": { "grants": [
+    { "resource_type": "datastore_table", "resource_name": "settlements",
+      "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] },
+    { "resource_type": "datastore_table", "resource_name": "review_requests",
+      "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] },
+    { "resource_type": "datastore_table", "resource_name": "settlement_events",
+      "permission_ids": ["datastore.table.read", "datastore.record.read", "datastore.record.write"] }
+  ] }
+}
